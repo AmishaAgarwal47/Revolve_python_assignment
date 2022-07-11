@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 import json
 import os
+import logging
+import sys
 
 def get_params() -> dict:
     parser = argparse.ArgumentParser(description='DataTest')
@@ -49,15 +51,26 @@ def create_output_json(out_path,data,product_dict,customer_dict):
 
 
 def main():
-    params = get_params()
-    print(params)
-    #this date range must remain within the date limits of data generated else will result in error
-    start= datetime.date(2018, 12, 1)
-    end=datetime.date(2018, 12, 31)
-    all_tran_data=append_transactional_data(start,end)
-    product_dict= get_dict('product',params['products_location'])
-    customer_dict= get_dict('customer',params['customers_location'])
-    create_output_json(params['output_location'],all_tran_data,product_dict,customer_dict)
+    file_name=str(datetime.date.today())+'logs.log'
+    logging.basicConfig(filename=file_name, filemode='w', format='%(name)s - %(levelname)s - %(message)s',level=logging.INFO)
+    logging.info("script started running")
+    try:
+
+        params = get_params()
+        print(params)
+        #this date range must remain within the date limits data generated else will result in error
+        start= datetime.date(2018, 12, 1)
+        end=datetime.date(2017, 12, 31)
+        if start < end:
+            all_tran_data=append_transactional_data(start,end)
+        else:
+            sys.exit("Invalid dates passed")
+        product_dict= get_dict('product',params['products_location'])
+        customer_dict= get_dict('customer',params['customers_location'])
+        create_output_json(params['output_location'],all_tran_data,product_dict,customer_dict)
+        logging.info("Script ended successfully")
+    except Exception as e:
+        logging.error("Exception occurred", exc_info=True)
 
 
 def append_transactional_data(start_date,end_date):
